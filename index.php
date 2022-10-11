@@ -15,43 +15,41 @@ foreach($friendsArray as $friend) {
     echo '</ul>';
 }
 
+// vérification données ////
 
-//// vérification données ////
+if($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $data = array_map('trim', $_POST);
+    $errors = [];
 
-// $data = array_map('trim', $_POST);
-// $errors = [];
+    if (!isset($data['firstName']) || empty($data['firstName'])) 
+    $errors[] = "Le prénom est obligatoire";
+    if (!isset($data['lastName']) || empty($data['lastName'])) 
+    $errors[] = "Le nom est obligatoire";
+    if (strlen($data['firstName']) > 45)
+    $errors[] = "Le prénom doit contenir au maximum 45 caractères";
+    if (strlen($data['lastName']) > 45)
+    $errors[] = "Le prénom doit contenir au maximum 45 caractères";
+    if (!empty($errors)) {
+        echo 'Attention !'. "<br>";
+        foreach ($errors as $error)
+        echo $error. "<br>";
+    }
 
-// if($_SERVER['REQUEST_METHOD'] === 'POST') {
-//     if (!isset($data['firstName']) || empty($data['firstName'])) 
-//     $errors[] = "Le prénom est obligatoire";
-//     if (!isset($data['lastName']) || empty($data['lastName'])) 
-//     $errors[] = "Le nom est obligatoire";
-//     if (strlen($data['firstName']) > 45)
-//     $errors[] = "Le prénom doit contenir au maximum 45 caractères";
-//     if (strlen($data['lastName']) > 45)
-//     $errors[] = "Le prénom doit contenir au maximum 45 caractères";
-//     if (!empty($errors)) {
-//         echo 'Attention !'. "<br>";
-//         foreach ($errors as $error)
-//         echo $error. "<br>";
-//     }
-// }
+    // On prépare notre requête d'insertion
+    $query = 'INSERT INTO friend (firstname, lastname) VALUES (:firstname, :lastname)';
+    $statement = $pdo->prepare($query);
+
+    // On lie les valeurs saisies dans le formulaire à nos placeholders
+    $statement->bindValue(':firstname', $data['firstName'], \PDO::PARAM_STR);
+    $statement->bindValue(':lastname', $data['lastName'], \PDO::PARAM_STR);
+
+    $statement->execute();
+
+    header('Location: index.php');
+
+}
 
 
-
-// On récupère les informations saisies précédemment dans un formulaire
-$firstname = trim($_POST['firstName']); 
-$lastname = trim($_POST['lastName']);
-
-// On prépare notre requête d'insertion
-$query = 'INSERT INTO friend (firstname, lastname) VALUES (:firstname, :lastname)';
-$statement = $pdo->prepare($query);
-
-// On lie les valeurs saisies dans le formulaire à nos placeholders
-$statement->bindValue(':firstname', $firstname, \PDO::PARAM_STR);
-$statement->bindValue(':lastname', $lastname, \PDO::PARAM_STR);
-
-$statement->execute();
 
 ?>
 
